@@ -1,6 +1,6 @@
 <launch>
-    <node pkg="point_cloud_filters"
-        name="simple_filter"
-        type="simple_filter"
-        output="screen"/>
+  <node pkg="point_cloud_filters" name="simple_filter" type="simple_filter" output="screen">
+	<rosparam command="load" file="$(find point_cloud_filters)/params/simple_filter.yaml"/>
+	<remap from="scan" to="velodyne_points2"/>
+  </node>
 </launch>
