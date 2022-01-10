@@ -1,0 +1,6 @@
+<launch>
+    <node pkg="point_cloud_filters"
+        name="simple_filter"
+        type="simple_filter"
+        output="screen"/>
+</launch>
