@@ -1,19 +1,19 @@
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 
-class SimpleScan
+class SimplePointCloudScan
 {
 public:
-  SimpleScan()
+  SimplePointCloudScan()
   {
     reduce_frequency_ = false;
 
-    if (!ros::param::get("/simple_filter/reduce_points_factor", reduce_points_factor_))
+    if (!ros::param::get("/simple_point_cloud_filter/reduce_points_factor", reduce_points_factor_))
       reduce_points_factor_ = 1;
-    if (!ros::param::get("/simple_filter/reduce_frequency_factor", reduce_frequency_factor_))
+    if (!ros::param::get("/simple_point_cloud_filter/reduce_frequency_factor", reduce_frequency_factor_))
       reduce_frequency_factor_ = 1;
 
-    ROS_INFO("Freq factor: %d", reduce_frequency_factor_);
+    ROS_INFO("Frequency factor: %d", reduce_frequency_factor_);
     ROS_INFO("Resolution factor: %d", reduce_points_factor_);
 
     if (reduce_frequency_factor_ > 1)
@@ -22,7 +22,7 @@ public:
       scan_counter_ = reduce_frequency_factor_;
     }
 
-    sub_ = nh_.subscribe("scan", 10, &SimpleScan::scanCallback, this);
+    sub_ = nh_.subscribe("scan", 10, &SimplePointCloudScan::scanCallback, this);
     pub_ = nh_.advertise<sensor_msgs::PointCloud2>("cloud_scan_filtered", 1000);
   }
 
@@ -72,8 +72,8 @@ private:
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "simple_filter");
-  SimpleScan s;
+  ros::init(argc, argv, "simple_point_cloud_filter");
+  SimplePointCloudScan s;
   ros::spin();
   return 0;
 }
