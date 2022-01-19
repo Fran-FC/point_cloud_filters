@@ -4,35 +4,26 @@
 class SimplePointCloudScan
 {
 public:
+  float frequency_;
+
   SimplePointCloudScan()
   {
-    reduce_frequency_ = false;
-
     if (!ros::param::get("/simple_point_cloud_filter/reduce_points_factor", reduce_points_factor_))
       reduce_points_factor_ = 1;
-    if (!ros::param::get("/simple_point_cloud_filter/reduce_frequency_factor", reduce_frequency_factor_))
-      reduce_frequency_factor_ = 1;
+    if (!ros::param::get("/simple_point_cloud_filter/frequency", frequency_))
+      frequency_ = 1.0;
 
-    ROS_INFO("Frequency factor: %d", reduce_frequency_factor_);
-    ROS_INFO("Resolution factor: %d", reduce_points_factor_);
+    ROS_INFO("Frequency: %.1f Hz", frequency_);
+    ROS_INFO("Resolution reduce factor: %d", reduce_points_factor_);
 
-    if (reduce_frequency_factor_ > 1)
-    {
-      reduce_frequency_ = true;
-      scan_counter_ = reduce_frequency_factor_;
-    }
-
-    sub_ = nh_.subscribe("scan", 10, &SimplePointCloudScan::scanCallback, this);
-    pub_ = nh_.advertise<sensor_msgs::PointCloud2>("cloud_scan_filtered", 1000);
+    sub_ = nh_.subscribe("scan", 1, &SimplePointCloudScan::scanCallback, this);
+    pub_ = nh_.advertise<sensor_msgs::PointCloud2>("cloud_scan_filtered", 10);
   }
 
 private:
-  // auxiliar variables
-  int scan_counter_;
-  bool reduce_frequency_;
+
   // values read from config file
   int reduce_points_factor_;
-  int reduce_frequency_factor_;
 
   ros::NodeHandle nh_;
   ros::Subscriber sub_;
@@ -40,17 +31,6 @@ private:
 
   void scanCallback(const sensor_msgs::PointCloud2::Ptr& scan)
   {
-    // Reduce frequency block
-    if (reduce_frequency_)
-    {
-      if (scan_counter_ != 1)
-      {
-        --scan_counter_;
-        return;
-      }
-      scan_counter_ = reduce_frequency_factor_;
-    }
-
     int k = 0;
     for (int i = 0; i < scan->width; i += reduce_points_factor_)
     {
@@ -74,6 +54,12 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "simple_point_cloud_filter");
   SimplePointCloudScan s;
-  ros::spin();
+
+  ros::Rate rate(s.frequency_);
+  while(ros::ok())
+  {
+    ros::spinOnce();
+    rate.sleep();    
+  }
   return 0;
 }
